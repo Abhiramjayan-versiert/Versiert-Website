@@ -137,7 +137,7 @@ See `.env.example`. Add the variable in your hosting dashboard, then redeploy.
 
 ## Still needs your input
 
-1. **Contact email spelling.** The site uses `hello@verisert.in`, as you provided. Your domain is **versiert.in** (`ver-SIERT`), and `verisert.in` (`ver-ISERT`) appears to be unregistered. If the correct address is `hello@versiert.in`, change `email` in `lib/site.ts`. Until it's confirmed working, enquiries may bounce.
+1. **Contact mailbox:** the site uses `hello@versiert.in`. Make sure this mailbox exists at your email provider.
 2. **Social profile URLs:** in `lib/site.ts → socials`. Empty links stay hidden.
 3. **Real portfolio projects:** `data/projects.ts`.
 4. **Real testimonials, with permission:** `data/testimonials.ts`, or set `showTestimonials = false`.

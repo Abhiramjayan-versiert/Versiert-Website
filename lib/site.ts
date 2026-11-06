@@ -9,8 +9,7 @@ export const site = {
   /** Canonical URL. Set NEXT_PUBLIC_SITE_URL in your host to override. */
   url: (process.env.NEXT_PUBLIC_SITE_URL || "https://versiert.in").replace(/\/$/, ""),
 
-  // ⚠ Confirm spelling: the brand domain is versiert.in, this address uses "verisert".
-  email: "hello@verisert.in",
+  email: "hello@versiert.in",
 
   location: {
     city: "Thiruvananthapuram",
