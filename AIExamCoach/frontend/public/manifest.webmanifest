@@ -1,2 +1,18 @@
-{ "name": "AI Exam Coach", "short_name": "Exam Coach", "start_url": "/", "display": "standalone", "background_color": "#0b0b0c", "theme_color": "#0b0b0c",
-  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }] }
+{
+  "id": "/",
+  "name": "AI Exam Coach",
+  "short_name": "Exam Coach",
+  "description": "Private exam coach. All AI and data stay on your Windows PC.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0b0c",
+  "theme_color": "#0b0b0c",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

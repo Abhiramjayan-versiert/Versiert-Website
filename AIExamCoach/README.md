@@ -12,7 +12,7 @@ All AI runs on your own PC through **Ollama** (`qwen3:4b` + `embeddinggemma`). T
 1. [What it does](#what-it-does)
 2. [Architecture](#architecture)
 3. [Install on the Windows PC](#install-on-the-windows-pc)
-4. [Daily use — launch, stop, status](#daily-use)
+4. [Daily use — launch, stop, status](#daily-use) · [Use it as a web app](#use-it-as-a-web-app)
 5. [First steps (profiles, uploads, plan, mock, backup)](#first-steps)
 6. [MacBook and iPhone access](#macbook-and-iphone-access)
 7. [Security model](#security-model)
@@ -74,7 +74,7 @@ AIExamCoach/
 ├── data/               database/, documents/, vector_store/, uploads/, backups/   (created at install, never in git)
 ├── config/settings.json  non-secret settings (created on first run)
 ├── logs/               backend + server logs, system-report.json
-├── scripts/            install, start, stop, restart, status, backup, restore, update, network, inspect (.ps1)
+├── scripts/            install, start, stop, restart, status, autostart, backup, restore, update, network, inspect (.ps1)
 └── docs/               REMOTE_ACCESS, TROUBLESHOOTING, TEST_REPORT
 ```
 
@@ -115,9 +115,24 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1 -Open    # start (che
 powershell -ExecutionPolicy Bypass -File scripts\status.ps1         # backend, frontend, Ollama, model GPU/CPU placement, GPU, DB, network
 powershell -ExecutionPolicy Bypass -File scripts\stop.ps1           # stops ONLY this app's process (verified by PID + command line)
 powershell -ExecutionPolicy Bypass -File scripts\restart.ps1
+powershell -ExecutionPolicy Bypass -File scripts\autostart.ps1 -Enable   # start automatically at Windows sign-in
 ```
 
 On the Windows PC open **http://127.0.0.1:8765**. The first visit asks you to create your account (Argon2-hashed password, ≥10 characters with upper/lower case and a number).
+
+## Use it as a web app
+
+The Windows PC is the only computer that does any work. It runs the web server, Ollama (qwen3:4b, embeddinggemma), OCR, document processing, the database and the search index. Browsers on the PC, MacBook and iPhone only display pages and send what you type or upload to the PC.
+
+* **Nothing is computed or stored on your devices.** No AI or data processing runs in the browser. There is no offline cache or service worker, and no study data is saved in browser storage. The only things kept are the sign-in cookies. The interface uses system fonts and loads nothing from the internet; every request goes to your PC (verified in a browser test).
+* **Install it like an app:**
+  * **Windows (Edge/Chrome):** open the app → the install icon in the address bar (or menu → *Apps → Install*).
+  * **MacBook:** Safari → *File → Add to Dock*, or Chrome → *Install*.
+  * **iPhone:** Safari → *Share → Add to Home Screen*.
+
+  It then opens in its own window with the Exam Coach icon, still served by your PC. Chrome/Edge only offer *Install* over HTTPS or on the PC itself, so use the Tailscale address (`https://…ts.net`) on the MacBook. Safari's *Add to Dock* and iPhone's *Add to Home Screen* also work on the LAN address.
+* **Always available:** `scripts\autostart.ps1 -Enable` starts the app automatically when you sign in to Windows; Ollama starts itself at sign-in. Turn it off with `-Disable`. Keep the PC awake for remote use.
+* If the PC is off, asleep or unreachable, the app shows a *"Windows host is offline"* banner. It cannot work without the PC, by design.
 
 ## First steps
 

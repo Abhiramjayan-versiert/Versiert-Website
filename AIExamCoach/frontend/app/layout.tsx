@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   title: "AI Exam Coach",
   description: "Private, local AI exam coach — runs on your own PC with Ollama.",
   robots: { index: false, follow: false },
+  manifest: "/manifest.webmanifest",
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icon-192.png", sizes: "192x192" }], apple: "/apple-touch-icon.png" },
   appleWebApp: { capable: true, title: "Exam Coach", statusBarStyle: "black-translucent" },
 };
 

@@ -45,6 +45,12 @@ Development and testing happened in a **Linux cloud container** (4 vCPU, 15.7 GB
 
 Also verified: local-only enforcement (remote Ollama URLs, `*-cloud` models and disabling the flag are all rejected; settings API cannot change them), a static scan finds no cloud AI SDKs/endpoints, controlled tool registry (unknown tools/agents refused, destructive tool requires approval, input validated), task cancellation (`test_13`), static-file path traversal blocked, data/config directories never served.
 
+## Web-app / processing-location check
+Browser test across all 14 pages after sign-in (Chromium):
+* Request origins: only the app's own address (no CDNs, fonts, analytics or external APIs).
+* Browser storage: localStorage, sessionStorage, IndexedDB, Cache Storage all empty; no service worker. The only cookies are `aec_session` (HttpOnly, SameSite=Strict) and `aec_csrf` (SameSite=Strict).
+* Chrome installability errors: none; manifest served as `application/manifest+json`; PNG and Apple touch icons present.
+
 ## Bugs found by testing and fixed
 1. `ToolRegistry.call` received `tracker` twice → every agent tool call would have crashed. Fixed (found by unit test).
 2. Arithmetic-step checker misread chained equalities (`SI = 5000*8*3/100 = 1200`). Rewritten.

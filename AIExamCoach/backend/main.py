@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import logging.handlers
+import mimetypes
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -19,6 +20,8 @@ from backend.config import FRONTEND_DIST, LOG_DIR, ensure_dirs, get_settings
 from backend.database.session import SessionLocal, init_db
 from backend.rag import ingest
 
+mimetypes.add_type("application/manifest+json", ".webmanifest")
+mimetypes.add_type("image/svg+xml", ".svg")
 ensure_dirs()
 _handler = logging.handlers.RotatingFileHandler(LOG_DIR / "backend.log", maxBytes=5_000_000, backupCount=3, encoding="utf-8")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s", handlers=[_handler, logging.StreamHandler()])
