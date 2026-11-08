@@ -4,7 +4,7 @@ import json
 import socket
 from datetime import date, datetime
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, ValidationError
 from sqlalchemy import inspect, select
@@ -16,11 +16,12 @@ from backend.database.session import health_check
 from backend.evaluation import ocr
 from backend.models import entities as E
 from backend.rag import store
-from backend.security.auth import audit, client_ip, get_profile
+from backend.security.auth import audit, client_ip, get_profile, require_admin
 from backend.security.files import safe_join
 from backend.services import backup, ollama
 
 router = APIRouter(prefix="/api", tags=["system"])
+ADMIN = Depends(require_admin)
 START = datetime.now()
 
 
@@ -84,7 +85,7 @@ def get_s(user=USER):
 
 
 @router.patch("/settings")
-def patch_s(changes: dict, request: Request, db: Session = DB, user=USER):
+def patch_s(changes: dict, request: Request, db: Session = DB, user=ADMIN):
     forbidden = {"local_only_ai", "ollama_url"} & set(changes)
     if forbidden:
         raise HTTPException(400, f"{', '.join(sorted(forbidden))} cannot be changed from the web interface")
@@ -99,7 +100,10 @@ def patch_s(changes: dict, request: Request, db: Session = DB, user=USER):
 
 @router.get("/audit")
 def audit_log(limit: int = 200, db: Session = DB, user=USER):
-    rows = db.scalars(select(E.AuditLog).order_by(E.AuditLog.id.desc()).limit(min(limit, 1000))).all()
+    q = select(E.AuditLog)
+    if not user.is_admin:  # users see only their own activity
+        q = q.where(E.AuditLog.user_id == user.id)
+    rows = db.scalars(q.order_by(E.AuditLog.id.desc()).limit(min(limit, 1000))).all()
     return [{"at": r.at.isoformat(), "action": r.action, "detail": r.detail, "ip": r.ip, "ok": r.ok} for r in rows]
 
 
@@ -109,19 +113,19 @@ def db_health(user=USER):
 
 
 @router.get("/backups")
-def backups(user=USER):
+def backups(user=ADMIN):
     return backup.list_backups()
 
 
 @router.post("/backups")
-def make_backup(request: Request, include_vectors: bool = True, db: Session = DB, user=USER):
+def make_backup(request: Request, include_vectors: bool = True, db: Session = DB, user=ADMIN):
     p = backup.create_backup(include_vectors)
     audit(db, "backup_created", user_id=user.id, detail=p.name, ip=client_ip(request))
     return {"name": p.name, "size_mb": round(p.stat().st_size / 2**20, 2)}
 
 
 @router.get("/backups/{name}")
-def download_backup(name: str, user=USER):
+def download_backup(name: str, user=ADMIN):
     if not name.startswith("examcoach-backup-") or not name.endswith(".zip"):
         raise HTTPException(400, "Invalid backup name")
     p = safe_join(BACKUP_DIR, name)

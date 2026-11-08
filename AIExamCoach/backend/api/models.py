@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from backend.api.deps import DB, USER
 from backend.models.entities import User
-from backend.security.auth import audit, client_ip
+from backend.security.auth import audit, client_ip, require_admin
 from backend.services import model_manager as mm
 from backend.services import ollama
 from backend.services.system_info import system_info
+
+ADMIN = Depends(require_admin)
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 NAME = r"^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,100}$"
@@ -30,12 +32,12 @@ class PullIn(BaseModel):
 
 
 @router.post("/check")
-def check(body: PullIn, user: User = USER):
+def check(body: PullIn, user: User = ADMIN):
     return mm.check_capacity(body.model)
 
 
 @router.post("/pull")
-async def pull(body: PullIn, request: Request, db=DB, user: User = USER):
+async def pull(body: PullIn, request: Request, db=DB, user: User = ADMIN):
     try:
         await ollama.version()
     except ollama.OllamaUnavailable as e:
@@ -47,7 +49,7 @@ async def pull(body: PullIn, request: Request, db=DB, user: User = USER):
 
 
 @router.post("/pull/{model:path}/cancel")
-def cancel_pull(model: str, user: User = USER):
+def cancel_pull(model: str, user: User = ADMIN):
     return {"cancelled": mm.cancel_pull(model)}
 
 
@@ -57,7 +59,7 @@ class DeleteIn(BaseModel):
 
 
 @router.post("/delete")
-async def delete(body: DeleteIn, request: Request, db=DB, user: User = USER):
+async def delete(body: DeleteIn, request: Request, db=DB, user: User = ADMIN):
     if body.confirm != body.model:
         raise HTTPException(400, "Type the exact model name to confirm deletion")
     from backend.config import get_settings
@@ -76,7 +78,7 @@ class ActiveIn(BaseModel):
 
 
 @router.post("/active")
-async def set_active(body: ActiveIn, request: Request, db=DB, user: User = USER):
+async def set_active(body: ActiveIn, request: Request, db=DB, user: User = ADMIN):
     try:
         res = await mm.set_active(body.chat_model, body.embedding_model)
     except ValueError as e:
@@ -93,7 +95,7 @@ class TestIn(BaseModel):
 
 
 @router.post("/test")
-async def test(body: TestIn, user: User = USER):
+async def test(body: TestIn, user: User = ADMIN):
     try:
         return await (mm.test_inference(body.model) if body.kind == "chat" else mm.test_embedding(body.model))
     except ollama.OllamaError as e:
@@ -101,7 +103,7 @@ async def test(body: TestIn, user: User = USER):
 
 
 @router.post("/unload")
-async def unload(body: TestIn, user: User = USER):
+async def unload(body: TestIn, user: User = ADMIN):
     from backend.config import get_settings
 
     await ollama.unload(body.model or get_settings().chat_model)

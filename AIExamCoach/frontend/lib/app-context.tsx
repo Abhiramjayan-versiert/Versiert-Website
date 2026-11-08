@@ -7,7 +7,7 @@ export type Profile = {
   daily_hours: number; study_days: number[]; notes: string; archived: boolean; subjects: number; topics: number;
   topics_completed: number; documents: number; mocks: number;
 };
-export type User = { id: number; username: string; display_name: string; active_profile_id: number | null };
+export type User = { id: number; username: string; display_name: string; active_profile_id: number | null; is_admin: boolean; must_change_password: boolean };
 
 type Ctx = {
   user: User | null; profiles: Profile[]; profile: Profile | null; pid: number | null; online: boolean;

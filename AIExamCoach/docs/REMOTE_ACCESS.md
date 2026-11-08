@@ -72,6 +72,17 @@ The free Personal plan is enough. You sign in with the same account (Google, Mic
 
 Remember: Tailscale must be **connected** on the phone/Mac, and the PC must be on.
 
+### 4. Giving other people access over Tailscale
+Other people need **their own** Tailscale account and app on their device. Then either:
+* **Share just this PC** (recommended): Tailscale admin console → Machines → your PC → **⋯ → Share…** → send them the invite link. They can reach this PC from their own tailnet, but not your other devices.
+* or **invite them to your tailnet**: admin console → Users → **Invite users**.
+
+To keep them to the app only, add an access rule in the admin console (*Access controls*) that allows them only port **443** on your PC, for example:
+```json
+{ "action": "accept", "src": ["friend@example.com"], "dst": ["your-pc-name:443"] }
+```
+(Ollama is bound to `127.0.0.1`, so it is never reachable from the tailnet anyway.) Then create their app account in **Settings → Users**.
+
 ### Undo
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\network.ps1 -Mode local_only

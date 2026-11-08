@@ -22,7 +22,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(64), unique=True)
     password_hash: Mapped[str] = mapped_column(String(256))
     display_name: Mapped[str] = mapped_column(String(128), default="")
-    is_admin: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     preferences: Mapped[dict] = mapped_column(JSON, default=dict)
     active_profile_id: Mapped[int | None] = mapped_column(Integer, nullable=True)

@@ -23,7 +23,7 @@ const NAV = [
   { href: "/analytics/", label: "Performance Analytics", icon: BarChart3 },
   { href: "/documents/", label: "Document Library", icon: Library },
   { href: "/agents/", label: "Agent Activity", icon: Activity },
-  { href: "/models/", label: "Model Manager", icon: Cpu },
+  { href: "/models/", label: "Model Manager", icon: Cpu, admin: true },
   { href: "/settings/", label: "Settings", icon: Settings },
 ];
 const MOBILE = [NAV[0], NAV[1], NAV[7], NAV[9]];
@@ -57,7 +57,7 @@ function Sidebar({ onNav }: { onNav?: () => void }) {
       </div>
       <div className="px-3 pb-3"><ProfileSwitcher /></div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-4" aria-label="Main">
-        {NAV.map(({ href, label, icon: Icon }) => (
+        {NAV.filter((n) => !(n as { admin?: boolean }).admin || user?.is_admin).map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href} onClick={onNav}
             className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] ${isActive(path, href) ? "bg-white/10 font-medium text-white" : "hover:bg-white/5 hover:text-white"}`}>
             <Icon className={`h-4 w-4 ${isActive(path, href) ? "text-[var(--color-accent)]" : ""}`} />
@@ -66,7 +66,7 @@ function Sidebar({ onNav }: { onNav?: () => void }) {
         ))}
       </nav>
       <div className="border-t border-white/10 px-4 py-3 text-xs">
-        <div className="truncate text-white">{user?.display_name}</div>
+        <div className="truncate text-white">{user?.display_name}{user?.is_admin && <span className="ml-1.5 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-[#d4d4d8]">admin</span>}</div>
         <button className="mt-1 text-[#8a8a93] hover:text-white" onClick={async () => { await api.post("/api/auth/logout"); window.location.href = "/login/"; }}>Sign out</button>
       </div>
     </div>
@@ -76,7 +76,7 @@ function Sidebar({ onNav }: { onNav?: () => void }) {
 function Frame({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
-  const { online } = useApp();
+  const { online, user } = useApp();
   return (
     <div className="min-h-dvh lg:pl-60">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 lg:block"><Sidebar /></aside>
@@ -98,6 +98,11 @@ function Frame({ children }: { children: React.ReactNode }) {
       {!online && (
         <div className="flex items-center gap-2 bg-amber-100 px-4 py-2 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200" role="alert">
           <WifiOff className="h-4 w-4" /> The Windows host is offline or unreachable. It must stay powered on and connected for remote access.
+        </div>
+      )}
+      {user?.must_change_password && !path.startsWith("/settings") && (
+        <div className="flex flex-wrap items-center gap-2 bg-[var(--color-accent-soft)] px-4 py-2 text-sm text-[#3f6212] dark:bg-lime-950/50 dark:text-lime-200" role="status">
+          You are using a temporary password. <Link href="/settings/" className="font-semibold underline">Choose your own password</Link>
         </div>
       )}
       <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-5 sm:px-6 lg:pb-10 lg:pt-8">{children}</main>

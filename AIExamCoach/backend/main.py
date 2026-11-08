@@ -54,9 +54,9 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(title="AI Exam Coach", version="1.0.0", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
-    from backend.api import agents, analytics, auth, chat, documents, evaluation, mocks, models, planner, profiles, questions, revision, syllabus, system
+    from backend.api import agents, analytics, auth, chat, documents, evaluation, mocks, models, planner, profiles, questions, revision, syllabus, system, users
 
-    for r in (auth, profiles, syllabus, documents, chat, planner, questions, mocks, evaluation, revision, analytics, agents, models, system):
+    for r in (auth, profiles, syllabus, documents, chat, planner, questions, mocks, evaluation, revision, analytics, agents, models, system, users):
         app.include_router(r.router)
 
     max_body = (get_settings().max_upload_mb + 2) * 1024 * 1024

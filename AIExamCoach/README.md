@@ -14,7 +14,7 @@ All AI runs on your own PC through **Ollama** (`qwen3:4b` + `embeddinggemma`). T
 3. [Install on the Windows PC](#install-on-the-windows-pc)
 4. [Daily use — launch, stop, status](#daily-use) · [Use it as a web app](#use-it-as-a-web-app)
 5. [First steps (profiles, uploads, plan, mock, backup)](#first-steps)
-6. [MacBook and iPhone access](#macbook-and-iphone-access)
+6. [Multiple users](#multiple-users) · [MacBook and iPhone access](#macbook-and-iphone-access)
 7. [Security model](#security-model)
 8. [Configuration](#configuration)
 9. [Development and tests](#development-and-tests)
@@ -153,6 +153,21 @@ The Windows PC is the only computer that does any work. It runs the web server, 
 powershell -ExecutionPolicy Bypass -File scripts\backup.ps1 -Destination E:\ExamCoachBackups
 ```
 Backups (`data\backups\examcoach-backup-*.zip`) contain a consistent SQLite copy, your documents, settings, the vector index and a checksummed manifest. Restore with `scripts\restore.ps1 -Path <zip>` (validates checksums + DB integrity, asks you to type RESTORE, takes a safety backup first). *Settings → Export* downloads a profile as JSON.
+
+## Multiple users
+
+The first account created is the **administrator**. To give other people (family, friends, a study group) their own access:
+
+1. **Settings → Users → Add a user**: enter a username, their name and a temporary password, then **Create account**.
+2. Give them the username and temporary password. At first sign-in they are asked to choose their own password.
+3. Give them a way to reach the PC (see the next section): *LAN mode* if they are on your Wi-Fi, or *Tailscale* for anywhere (invite them to your tailnet or share the machine).
+
+What each person gets:
+* Their own MBA / SSC / Other profiles, documents, plans, questions, mocks, scores and revision. **Nobody can see anyone else's data** (enforced on every request and covered by tests).
+* Students cannot change system settings, models, network mode or backups, and cannot manage users. The Model Manager is hidden from them, and they see only their own audit entries.
+* As administrator you can **reset a password** (signs them out), **disable** an account (signs them out immediately and blocks login), make someone an admin, or **delete** an account and all its data (requires typing the username). You cannot disable, demote or delete yourself, and at least one admin always remains.
+
+All AI still runs on this one PC and one GPU, one request at a time, so if several people use the AI at once their requests wait in a short queue. This is fine for a handful of users.
 
 ## MacBook and iPhone access
 

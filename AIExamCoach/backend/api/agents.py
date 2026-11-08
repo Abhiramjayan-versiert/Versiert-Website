@@ -27,14 +27,15 @@ def task_out(t: AgentTask) -> dict:
 
 def _task(db: Session, user: User, task_id: int) -> AgentTask:
     t = db.get(AgentTask, task_id)
-    if not t or (t.profile_id is not None and t.profile_id not in _owned_profiles(db, user)):
+    if not t or (t.profile_id is None and not user.is_admin) or (t.profile_id is not None and t.profile_id not in _owned_profiles(db, user)):
         raise HTTPException(404, "Task not found")
     return t
 
 
 @router.get("/tasks")
 def tasks(status: str | None = None, limit: int = 100, db: Session = DB, user: User = USER):
-    q = select(AgentTask).where(or_(AgentTask.profile_id.in_(_owned_profiles(db, user)), AgentTask.profile_id.is_(None)))
+    owned = AgentTask.profile_id.in_(_owned_profiles(db, user))
+    q = select(AgentTask).where(or_(owned, AgentTask.profile_id.is_(None)) if user.is_admin else owned)
     if status:
         q = q.where(AgentTask.status == status)
     return [task_out(t) for t in db.scalars(q.order_by(AgentTask.id.desc()).limit(min(limit, 500)))]

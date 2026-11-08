@@ -104,9 +104,20 @@ def current_user(request: Request, db: Session = Depends(get_db)) -> User:
         if not sent or not hmac.compare_digest(sent, s.csrf_token):
             raise HTTPException(403, "CSRF token missing or invalid")
     user = db.get(User, s.user_id)
-    if not user:
+    if not user or is_disabled(user):
         raise HTTPException(401, "Not signed in")
     request.state.user_id = user.id
+    return user
+
+
+def is_disabled(user: User) -> bool:
+    return bool((user.preferences or {}).get("disabled"))
+
+
+def require_admin(user: User = Depends(current_user)) -> User:
+    """Only the administrator may change system-wide settings, models, backups and users."""
+    if not user.is_admin:
+        raise HTTPException(403, "Only the administrator can do this.")
     return user
 
 

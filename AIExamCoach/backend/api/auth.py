@@ -11,7 +11,7 @@ from backend.models.entities import AuthSession, ExamProfile, User
 from backend.security import ratelimit
 from backend.security.auth import (
     CSRF_COOKIE, SESSION_COOKIE, USERNAME_RE, _load_session, audit, client_ip, create_session, destroy_session, hash_password,
-    validate_password_strength, verify_password,
+    is_disabled, validate_password_strength, verify_password,
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -50,8 +50,17 @@ def _set_cookies(resp: Response, request: Request, token: str, csrf: str) -> Non
 
 
 def _user_out(u: User) -> dict:
+    prefs = u.preferences or {}
     return {"id": u.id, "username": u.username, "display_name": u.display_name or u.username, "active_profile_id": u.active_profile_id,
-            "preferences": u.preferences or {}}
+            "preferences": prefs, "is_admin": bool(u.is_admin), "must_change_password": bool(prefs.get("must_change_password"))}
+
+
+def seed_profiles(db: Session, u: User) -> None:
+    """Every new account starts with its own MBA / SSC / Other profiles."""
+    for name, kind in INITIAL_PROFILES:
+        db.add(ExamProfile(user_id=u.id, name=name, exam_type=kind, target_pct=get_settings().default_target_pct))
+    db.flush()
+    u.active_profile_id = db.scalar(select(ExamProfile.id).where(ExamProfile.user_id == u.id).order_by(ExamProfile.id))
 
 
 @router.get("/status")
@@ -69,14 +78,10 @@ def setup(body: SetupIn, request: Request, response: Response, db: Session = DB)
     if not USERNAME_RE.match(body.username):
         raise HTTPException(400, "Username: 3-32 letters, digits, . _ -")
     validate_password_strength(body.password)
-    u = User(username=body.username, password_hash=hash_password(body.password), display_name=body.display_name or body.username)
+    u = User(username=body.username, password_hash=hash_password(body.password), display_name=body.display_name or body.username, is_admin=True)
     db.add(u)
     db.flush()
-    for name, kind in INITIAL_PROFILES:
-        db.add(ExamProfile(user_id=u.id, name=name, exam_type=kind, target_pct=get_settings().default_target_pct))
-    db.commit()
-    first = db.scalar(select(ExamProfile.id).where(ExamProfile.user_id == u.id).order_by(ExamProfile.id))
-    u.active_profile_id = first
+    seed_profiles(db, u)
     db.commit()
     token, csrf = create_session(db, u, request)
     _set_cookies(response, request, token, csrf)
@@ -92,6 +97,9 @@ def login(body: LoginIn, request: Request, response: Response, db: Session = DB)
     if not u or not verify_password(body.password, u.password_hash):
         audit(db, "login_failed", detail=f"username={body.username[:64]}", ip=ip, ok=False)
         raise HTTPException(401, "Invalid username or password")
+    if is_disabled(u):
+        audit(db, "login_blocked_disabled", user_id=u.id, ip=ip, ok=False)
+        raise HTTPException(403, "This account is disabled. Ask the administrator.")
     token, csrf = create_session(db, u, request)
     _set_cookies(response, request, token, csrf)
     audit(db, "login", user_id=u.id, ip=ip)
@@ -128,7 +136,9 @@ def update_me(body: PrefsIn, db: Session = DB, user: User = USER):
             raise HTTPException(404, "Profile not found")
         user.active_profile_id = p.id
     if body.preferences is not None:
-        user.preferences = {**(user.preferences or {}), **body.preferences}
+        protected = {"disabled", "must_change_password"}  # only the admin / password change can set these
+        clean = {k: v for k, v in body.preferences.items() if k not in protected}
+        user.preferences = {**(user.preferences or {}), **clean}
     db.commit()
     return _user_out(user)
 
@@ -141,6 +151,9 @@ def change_password(body: ChangePwIn, request: Request, db: Session = DB, user: 
         raise HTTPException(400, "Current password is incorrect")
     validate_password_strength(body.new_password)
     user.password_hash = hash_password(body.new_password)
+    prefs = dict(user.preferences or {})
+    prefs.pop("must_change_password", None)
+    user.preferences = prefs
     # sign out all other sessions
     current = request.cookies.get(SESSION_COOKIE)
     from backend.security.auth import _token_hash
