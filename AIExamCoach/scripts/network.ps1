@@ -47,12 +47,25 @@ switch ($Mode) {
         if (-not $isAdmin) { Write-Bad "Open PowerShell as Administrator to create the firewall rule, then re-run."; exit 1 }
         if (-not (Confirm-Action "Create the firewall rule and switch to LAN mode?")) { Write-Info "Cancelled."; exit 0 }
         Remove-TailscaleServe
-        if (-not (Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue)) {
-            New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $port `
-                -Profile Private -RemoteAddress LocalSubnet -Program $Python -Description "AI Exam Coach web app (not Ollama)" | Out-Null
+        # Network profile must be Private: the rule (and Windows' own defaults) block LAN access on Public networks.
+        $profiles = Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -ne "Disconnected" }
+        foreach ($np in $profiles) {
+            if ($np.NetworkCategory -eq "Public") {
+                Write-Warn2 "Your network '$($np.Name)' ($($np.InterfaceAlias)) is set to Public, which blocks other devices."
+                if (Confirm-Action "Is this your home network? Change it to Private?") {
+                    Set-NetConnectionProfile -InterfaceIndex $np.InterfaceIndex -NetworkCategory Private
+                    Write-Ok "'$($np.Name)' is now Private"
+                } else { Write-Warn2 "Left as Public - devices on this network will not be able to connect." }
+            } else { Write-Ok "Network '$($np.Name)' is $($np.NetworkCategory)" }
         }
+        # Recreate the rule. It is limited by port + Private profile + local subnet. (Not by program path:
+        # a venv's python.exe is a launcher, and the real listening process is the base Python interpreter.)
+        Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+        New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $port `
+            -Profile Private -RemoteAddress LocalSubnet -Description "AI Exam Coach web app on port $port (not Ollama)" | Out-Null
+        Write-Ok "Firewall rule '$ruleName' allows TCP $port from your local network only (Private profile)"
         Set-Mode "lan"
-        Write-Ok "LAN mode enabled. Restart the app: scripts\restart.ps1"
+        Write-Ok "LAN mode enabled. Now restart the app from a NORMAL (non-administrator) PowerShell: scripts\restart.ps1"
         foreach ($ip in (Get-LanAddresses | Where-Object { $_ -notlike "100.*" })) { Write-Info "Other devices: http://${ip}:$port" }
     }
     "tailscale" {
