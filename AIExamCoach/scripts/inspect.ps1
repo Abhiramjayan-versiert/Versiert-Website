@@ -45,6 +45,10 @@ function Show-Version($name, $cmd, $verArgs) {
     if (Test-Command $cmd) {
         $old = $ErrorActionPreference; $ErrorActionPreference = "Continue"
         try { $v = (& $cmd $verArgs 2>&1 | Select-Object -First 1) } catch { $v = "installed" } finally { $ErrorActionPreference = $old }
+        if ("$v" -match "was not found|Microsoft Store|not recognized") {
+            Write-Warn2 "$name : not installed (only the Windows Store placeholder was found)"
+            return $null
+        }
         Write-Ok "$name : $v"
         return "$v"
     } else { Write-Warn2 "$name : not installed"; return $null }
