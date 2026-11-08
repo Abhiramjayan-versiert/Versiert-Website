@@ -65,6 +65,67 @@ class GQBatch(BaseModel):
     questions: list[GQ]
 
 
+# Strict per-type output formats. Every field the validator needs is REQUIRED,
+# so grammar-constrained decoding cannot omit it (optional fields were often
+# skipped by the model, which made every descriptive question invalid).
+class RubricPoint(BaseModel):
+    point: str
+    marks: float
+
+
+class _ObjQ(BaseModel):
+    text: str
+    options: list[str]
+    correct: list[int] = Field(description="0-based indices of the correct options")
+    explanation: str
+    source_ids: list[str]
+
+
+class _TFQ(BaseModel):
+    text: str
+    correct_bool: bool
+    explanation: str
+    source_ids: list[str]
+
+
+class _BlankQ(BaseModel):
+    text: str = Field(description="sentence containing ____ for the blank")
+    accepted: list[str]
+    explanation: str
+    source_ids: list[str]
+
+
+class _NumQ(BaseModel):
+    text: str
+    expression: str = Field(description="pure arithmetic expression that computes the answer, digits and + - * / ( ) only")
+    unit: str
+    model_answer: str = Field(description="worked solution, step by step")
+    explanation: str
+    source_ids: list[str]
+
+
+class _DescQ(BaseModel):
+    text: str
+    model_answer: str = Field(description="complete answer that would earn full marks")
+    rubric: list[RubricPoint]
+    keywords: list[str]
+    explanation: str
+    source_ids: list[str]
+
+
+def _batch_model(qtype: str) -> type[BaseModel]:
+    item = {"mcq": _ObjQ, "msq": _ObjQ, "assertion_reason": _ObjQ, "true_false": _TFQ, "fill_blank": _BlankQ,
+            "numerical": _NumQ}.get(qtype, _DescQ)
+    return type(f"Batch_{qtype}", (BaseModel,), {"__annotations__": {"questions": list[item]}})
+
+
+def _to_gq(x: BaseModel) -> GQ:
+    d = x.model_dump()
+    if "rubric" in d:
+        d["rubric"] = [dict(r) for r in d["rubric"]]
+    return GQ(**d)
+
+
 def _validate(qtype: str, g: GQ, marks: float) -> tuple[dict | None, str]:
     """Return (question fields, problem)."""
     text = g.text.strip()
@@ -143,6 +204,7 @@ async def generate(
     created: list[Question] = []
     batch_size = 4 if qtype in ("mcq", "true_false", "fill_blank", "assertion_reason", "msq") else (2 if qtype in ("short_answer", "numerical") else 1)
     attempts = 0
+    failures = 0
     while len(created) < count and attempts < count + 4:
         attempts += 1
         topic = focus[(len(created) // batch_size) % len(focus)] if focus else None
@@ -163,7 +225,19 @@ async def generate(
             + "Include a brief explanation of the correct answer."
             + (f"\n\nSOURCES:\n{ctx}" if ctx else "")
         )
-        batch, _ = await ollama.chat_json([{"role": "system", "content": BASE_RULES}, {"role": "user", "content": prompt}], GQBatch, temperature=0.6)
+        try:
+            raw, _ = await ollama.chat_json([{"role": "system", "content": BASE_RULES}, {"role": "user", "content": prompt}], _batch_model(qtype),
+                                            temperature=0.6, max_tokens=900 * n + 400)
+        except (ollama.OllamaUnavailable, ollama.QueueFull):
+            raise  # Ollama is down or busy: stop and report it
+        except ollama.OllamaError as e:
+            # One unusable model reply must not throw away the whole paper: skip this batch and continue.
+            failures += 1
+            tracker.step(f"One {qtype.replace('_', ' ')} batch was unusable and was skipped")
+            if failures >= 3 and not created:
+                raise ollama.OllamaError(f"The model could not produce valid {qtype.replace('_', ' ')} questions after 3 tries: {e}")
+            continue
+        batch = GQBatch(questions=[_to_gq(x) for x in raw.questions])
         for g in batch.questions[:n]:
             fields, problem = _validate(qtype, g, marks)
             if not fields:
@@ -201,6 +275,7 @@ async def build_paper(
     first, then generate the remainder."""
     mix = PATTERNS.get(pattern, PATTERNS["mixed"])
     chosen: list[Question] = []
+    problems: list[str] = []
     for qtype, share in mix:
         target = total_marks * share
         per = DEFAULT_MARKS[qtype]
@@ -218,11 +293,18 @@ async def build_paper(
         take = pool[:need]
         if len(take) < need:
             tracker.step(f"Question bank has {len(take)} unused {qtype.replace('_', ' ')} question(s); generating {need - len(take)} more")
-            take += await generate(db, profile, tracker, qtype=qtype, count=need - len(take), subject_id=subject_id,
-                                   topic_ids=topic_ids, difficulty=difficulty, marks=per)
+            try:
+                take += await generate(db, profile, tracker, qtype=qtype, count=need - len(take), subject_id=subject_id,
+                                       topic_ids=topic_ids, difficulty=difficulty, marks=per)
+            except (ollama.OllamaUnavailable, ollama.QueueFull):
+                raise
+            except Exception as e:  # noqa: BLE001 - keep the other sections of the paper
+                problems.append(f"{qtype.replace('_', ' ')}: {e}")
+                tracker.step(f"Could not generate {qtype.replace('_', ' ')} questions; continuing with the rest of the paper")
         chosen += take
     if not chosen:
-        raise ValueError("Could not assemble any questions.")
+        raise ValueError("Could not assemble any questions. " + (" ".join(problems) if problems else
+                         "The generated questions failed the quality checks. Add topics on the Syllabus page or upload study material and try again."))
     total = round(sum(q.marks for q in chosen), 2)
     exam = MockExam(profile_id=profile.id, subject_id=subject_id, title=title or f"Mock exam — {total:g} marks",
                     mode=mode if mode in ("exam", "practice") else "exam", duration_min=duration_min, total_marks=total)
