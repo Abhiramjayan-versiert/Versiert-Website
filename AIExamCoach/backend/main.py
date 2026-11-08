@@ -82,7 +82,17 @@ def create_app() -> FastAPI:
     @app.exception_handler(RequestValidationError)
     async def _val(_: Request, exc: RequestValidationError):
         errs = [{"loc": e.get("loc"), "msg": e.get("msg")} for e in exc.errors()[:5]]
-        return JSONResponse({"detail": "Invalid input", "errors": errs}, status_code=422)
+        friendly = []
+        for e in exc.errors()[:3]:
+            field = str(e.get("loc", ["", "value"])[-1]).replace("_", " ")
+            ctx = e.get("ctx") or {}
+            if e.get("type") == "string_too_short":
+                friendly.append(f"{field.capitalize()} must be at least {ctx.get('min_length')} characters.")
+            elif e.get("type") == "string_too_long":
+                friendly.append(f"{field.capitalize()} must be at most {ctx.get('max_length')} characters.")
+            else:
+                friendly.append(f"{field.capitalize()}: {e.get('msg')}.")
+        return JSONResponse({"detail": " ".join(friendly) or "Invalid input", "errors": errs}, status_code=422)
 
     @app.exception_handler(Exception)
     async def _err(_: Request, exc: Exception):
