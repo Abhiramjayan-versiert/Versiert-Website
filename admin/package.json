@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20.9"
+    "node": "22.x"
   },
   "dependencies": {
     "geist": "^1.9.2",
