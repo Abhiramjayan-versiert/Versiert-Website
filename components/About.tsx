@@ -45,7 +45,7 @@ export function About() {
             </p>
           </Reveal>
           <h2 id="about-title" className="heading mt-6 text-[clamp(2.75rem,6.4vw,6rem)]">
-            <MaskLines lines={["More than", "just production."]} />
+            <MaskLines lines={about.heading} />
           </h2>
 
           <Reveal delay={0.1}>

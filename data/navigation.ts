@@ -1,3 +1,5 @@
+import siteData from "@/content/site.json";
+
 export type NavItem = { label: string; href: string };
 
 /** Main navigation. `href` values are section anchors on the home page. */
@@ -9,4 +11,4 @@ export const navigation: NavItem[] = [
   { label: "Contact", href: "#contact" },
 ];
 
-export const ctaLabel = "Let's Talk";
+export const ctaLabel: string = siteData.ctaLabel;

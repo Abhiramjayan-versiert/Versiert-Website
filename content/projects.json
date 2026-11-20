@@ -1,0 +1,92 @@
+{
+  "eyebrow": "Our Work",
+  "heading": [
+    "Selected",
+    "work."
+  ],
+  "intro": "Films, campaigns, content and stills — produced end-to-end.",
+  "sampleNote": "Portfolio launching soon — tiles marked “Sample” are placeholders.",
+  "categories": [
+    "Commercial Films",
+    "Social Media Content",
+    "Brand Campaigns",
+    "Photography",
+    "Events",
+    "Creative Projects"
+  ],
+  "items": [
+    {
+      "id": "sample-commercial",
+      "title": "Sample Commercial Film",
+      "category": "Commercial Films",
+      "thumbnail": "/images/work/sample-01.webp",
+      "videoUrl": "",
+      "description": "Placeholder for a 30–60 second commercial. Replace with your project title, a still from the film and the YouTube or Vimeo link.",
+      "layout": "wide",
+      "isSample": true
+    },
+    {
+      "id": "sample-reel-series",
+      "title": "Sample Reel Series",
+      "category": "Social Media Content",
+      "thumbnail": "/images/work/sample-02.webp",
+      "description": "Placeholder for a vertical reel series. Portrait thumbnails suit this tile — add a short hover loop with `previewVideo`.",
+      "layout": "tall",
+      "isSample": true
+    },
+    {
+      "id": "sample-brand-campaign",
+      "title": "Sample Brand Campaign",
+      "category": "Brand Campaigns",
+      "thumbnail": "/images/work/sample-03.webp",
+      "description": "Placeholder for a multi-format campaign — hero film, cut-downs and stills. Replace with the real campaign details.",
+      "layout": "wide",
+      "isSample": true
+    },
+    {
+      "id": "sample-editorial",
+      "title": "Sample Editorial Shoot",
+      "category": "Photography",
+      "thumbnail": "/images/work/sample-04.webp",
+      "description": "Placeholder for a photography or modelling shoot. Use your strongest frame as the thumbnail.",
+      "layout": "tall",
+      "isSample": true
+    },
+    {
+      "id": "sample-event",
+      "title": "Sample Event Highlights",
+      "category": "Events",
+      "thumbnail": "/images/work/sample-05.webp",
+      "description": "Placeholder for an event highlight film. Replace with the event name and highlight video link.",
+      "layout": "wide",
+      "isSample": true
+    },
+    {
+      "id": "sample-creative",
+      "title": "Sample Creative Project",
+      "category": "Creative Projects",
+      "thumbnail": "/images/work/sample-06.webp",
+      "description": "Placeholder for a personal or experimental piece — music video, short film or visual study.",
+      "layout": "wide",
+      "isSample": true
+    },
+    {
+      "id": "sample-portrait",
+      "title": "Sample Portrait Series",
+      "category": "Photography",
+      "thumbnail": "/images/work/sample-07.webp",
+      "description": "Placeholder for a portrait or product series.",
+      "layout": "tall",
+      "isSample": true
+    },
+    {
+      "id": "sample-launch",
+      "title": "Sample Product Launch Film",
+      "category": "Commercial Films",
+      "thumbnail": "/images/work/sample-08.webp",
+      "description": "Placeholder for a product launch film.",
+      "layout": "wide",
+      "isSample": true
+    }
+  ]
+}

@@ -10,7 +10,7 @@ export function Why() {
           index="05"
           eyebrow={why.eyebrow}
           id="why-title"
-          title={["Made with intent.", "Built around", "your objective."]}
+          title={why.heading}
         />
 
         <ol className="mt-16 md:mt-24">

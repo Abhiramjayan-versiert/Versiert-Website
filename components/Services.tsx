@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { services } from "@/data/services";
+import { services, servicesSection } from "@/data/services";
 import { enquire } from "@/lib/enquire";
 import { Reveal } from "./Reveal";
 import { SectionHeader } from "./SectionHeader";
@@ -31,13 +31,11 @@ export function Services() {
       <div className="container-x">
         <SectionHeader
           index="02"
-          eyebrow="Services"
+          eyebrow={servicesSection.eyebrow}
           id="services-title"
-          title={["What we", "create."]}
+          title={servicesSection.heading}
           aside={
-            <p className="max-w-sm text-white/60">
-              Eight disciplines, one production team. Engage us for a single shoot or an entire content programme.
-            </p>
+            <p className="max-w-sm text-white/60">{servicesSection.intro}</p>
           }
         />
 

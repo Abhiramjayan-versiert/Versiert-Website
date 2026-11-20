@@ -1,0 +1,26 @@
+{
+  "show": true,
+  "eyebrow": "Client words",
+  "heading": "In their words.",
+  "sampleNote": "Sample content — these are placeholders, not real client reviews. Genuine testimonials will be added with permission.",
+  "items": [
+    {
+      "quote": "Sample testimonial. A short, specific quote from a real client about working with Versiert Media will appear here.",
+      "name": "Client name",
+      "role": "Role, Company",
+      "isSample": true
+    },
+    {
+      "quote": "Sample testimonial. Ask clients what changed for them — the clearer and more specific the quote, the more it builds trust.",
+      "name": "Client name",
+      "role": "Role, Company",
+      "isSample": true
+    },
+    {
+      "quote": "Sample testimonial. Keep quotes to one to three sentences and always get permission to publish.",
+      "name": "Client name",
+      "role": "Role, Company",
+      "isSample": true
+    }
+  ]
+}

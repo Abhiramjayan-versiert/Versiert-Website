@@ -22,7 +22,7 @@ export function Process() {
   return (
     <section aria-labelledby="process-title" className="relative overflow-hidden bg-char py-24 md:py-40">
       <div className="container-x">
-        <SectionHeader index="04" eyebrow={process.eyebrow} id="process-title" title={["From first idea", "to final frame."]} />
+        <SectionHeader index="04" eyebrow={process.eyebrow} id="process-title" title={process.heading} />
 
         <div ref={ref} className="relative mt-16 md:mt-28">
           {/* Desktop horizontal rail */}

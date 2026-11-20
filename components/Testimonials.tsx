@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { showTestimonials, testimonials } from "@/data/testimonials";
+import { showTestimonials, testimonials, testimonialsSection } from "@/data/testimonials";
 import { Reveal } from "./Reveal";
 
 export function Testimonials() {
@@ -22,15 +22,14 @@ export function Testimonials() {
             <p className="eyebrow flex items-center gap-3">
               <span className="text-white/90">(06)</span>
               <span className="h-px w-8 bg-white/30" aria-hidden />
-              Client words
+              {testimonialsSection.eyebrow}
             </p>
             <h2 id="testimonials-title" className="heading mt-6 text-[clamp(2.25rem,4vw,3.5rem)]">
-              In their words.
+              {testimonialsSection.heading}
             </h2>
             {anySample && (
               <p className="mt-6 max-w-xs border-l border-tungsten/60 pl-4 text-sm leading-relaxed text-white/55">
-                Sample content — these are placeholders, not real client reviews. Genuine testimonials will be added
-                with permission.
+                {testimonialsSection.sampleNote}
               </p>
             )}
           </Reveal>

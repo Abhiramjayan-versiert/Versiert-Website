@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Play } from "lucide-react";
-import { categories, projects, type Category, type Project } from "@/data/projects";
+import { categories, projects, workSection, type Category, type Project } from "@/data/projects";
 import { Reveal } from "./Reveal";
 import { SectionHeader } from "./SectionHeader";
 import { ProjectModal } from "./ProjectModal";
@@ -131,15 +131,15 @@ export function Work() {
       <div className="container-x">
         <SectionHeader
           index="03"
-          eyebrow="Our Work"
+          eyebrow={workSection.eyebrow}
           id="work-title"
-          title={["Selected", "work."]}
+          title={workSection.heading}
           aside={
             <p className="max-w-sm text-white/60">
-              Films, campaigns, content and stills — produced end-to-end.
+              {workSection.intro}
               {hasSamples && (
                 <span className="mt-3 block font-mono text-[0.7rem] uppercase tracking-[0.16em] text-tungsten/90">
-                  Portfolio launching soon — tiles marked “Sample” are placeholders.
+                  {workSection.sampleNote}
                 </span>
               )}
             </p>

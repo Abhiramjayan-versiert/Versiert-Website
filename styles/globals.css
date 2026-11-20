@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source not "../admin";
+@source not "../content";
 
 /* ---------- Design tokens ---------- */
 @theme {

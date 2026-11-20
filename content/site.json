@@ -1,0 +1,43 @@
+{
+  "name": "Versiert Media",
+  "wordmark": "VERSIERT",
+  "wordmarkSub": "MEDIA",
+  "url": "https://versiert.in",
+  "email": "hello@versiert.in",
+  "location": {
+    "city": "Thiruvananthapuram",
+    "region": "Kerala",
+    "country": "India",
+    "short": "Trivandrum, India",
+    "coords": "8.5241° N, 76.9366° E"
+  },
+  "tagline": "Independent creative production studio based in Trivandrum, India.",
+  "description": "Versiert Media is a creative media production company in Thiruvananthapuram, Kerala — producing video, commercial and ad films, brand films, social media reels, photography, event coverage, podcasts and post-production for brands, businesses and individuals.",
+  "ctaLabel": "Let's Talk",
+  "socials": [
+    {
+      "label": "Instagram",
+      "href": ""
+    },
+    {
+      "label": "YouTube",
+      "href": ""
+    },
+    {
+      "label": "LinkedIn",
+      "href": ""
+    },
+    {
+      "label": "Vimeo",
+      "href": ""
+    },
+    {
+      "label": "Behance",
+      "href": ""
+    }
+  ],
+  "form": {
+    "endpoint": "",
+    "web3formsKey": ""
+  }
+}

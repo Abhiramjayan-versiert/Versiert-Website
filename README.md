@@ -47,36 +47,36 @@ npm run lint
 ```
 app/                 Root layout, page, SEO (metadata, sitemap, robots), icons, OG image, 404
 components/          One component per section + shared UI (Header, Hero, Services, Work…)
-data/                ★ All editable website content lives here
-lib/site.ts          ★ Global brand settings: name, email, location, socials, form backend
+data/                Typed wrappers around /content
+content/             ★ All editable website content (JSON), edited via the admin app
+admin/               Private admin web app (admin.versiert.in), deployed separately
 public/images/       Images (hero, about, services, work, contact)
 public/videos/       Optional self-hosted hero reel / hover previews
 styles/globals.css   Design tokens (colours, fonts, easing) + global styles
 scripts/             Placeholder-image generator
 ```
 
-## Editable content files
+## Editing content: use the admin app
+
+**Everything on the website is edited at https://admin.versiert.in**: text, images, services, portfolio, testimonials, contact details, social links and form settings. Saving publishes automatically. The dashboard lists every placeholder still to replace. Setup and details: [admin/README.md](./admin/README.md).
+
+Behind the scenes the content is stored as JSON in this repo:
 
 | What | File |
 | --- | --- |
-| Brand name, **email**, location, **social links**, form backend | `lib/site.ts` |
-| Navigation labels + "Let's Talk" label | `data/navigation.ts` |
-| Hero headline, supporting line, CTAs, **hero image / video** | `data/content.ts` → `hero` |
-| Marquee strip | `data/content.ts` → `marquee` |
-| About copy + images | `data/content.ts` → `about` |
-| Process / "Our Approach" steps | `data/content.ts` → `process` |
-| "Why Versiert Media" points | `data/content.ts` → `why` |
-| Contact headline + budget ranges | `data/content.ts` → `contact` |
-| **Services** (title, description, image, tags) | `data/services.ts` |
-| **Portfolio projects + categories** | `data/projects.ts` |
-| **Testimonials** (and a switch to hide the section) | `data/testimonials.ts` |
+| Brand, email, location, socials, header button, form backend | `content/site.json` |
+| Hero, scrolling strip, About, Our Approach, Why Versiert, Contact | `content/home.json` |
+| Services (+ section intro) | `content/services.json` |
+| Portfolio projects, categories (+ section intro) | `content/projects.json` |
+| Testimonials (+ show/hide switch) | `content/testimonials.json` |
 | Colours, fonts, animation easing | `styles/globals.css` (`@theme`) |
-| Social share image (1200×630) | `app/opengraph-image.png` |
-| Favicon / Apple touch icon | `app/icon.svg`, `app/apple-icon.png` |
+| Social share image / favicon | `app/opengraph-image.png`, `app/icon.svg` |
 
-### Adding a portfolio project
+Images uploaded through the admin go to `public/images/uploads/`.
 
-Add an object to the `projects` array in `data/projects.ts`:
+### Adding a portfolio project (by hand)
+
+The admin app is the easy way. To do it by hand, add an object to `items` in `content/projects.json`:
 
 ```ts
 {

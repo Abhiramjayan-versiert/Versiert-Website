@@ -1,47 +1,33 @@
 /**
- * GLOBAL SITE SETTINGS — edit this file to change brand details site-wide.
+ * Global brand settings are stored in /content/site.json and edited in the
+ * admin app. Environment variables, when set on the host, override the form
+ * backend and canonical URL.
  */
+import data from "@/content/site.json";
+
+type SiteData = {
+  name: string;
+  wordmark: string;
+  wordmarkSub: string;
+  url: string;
+  email: string;
+  location: { city: string; region: string; country: string; short: string; coords: string };
+  tagline: string;
+  description: string;
+  ctaLabel: string;
+  socials: { label: string; href: string }[];
+  form: { endpoint: string; web3formsKey: string };
+};
+
+const d = data as SiteData;
+
 export const site = {
-  name: "Versiert Media",
-  wordmark: "VERSIERT",
-  wordmarkSub: "MEDIA",
-
-  /** Canonical URL. Set NEXT_PUBLIC_SITE_URL in your host to override. */
-  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://versiert.in").replace(/\/$/, ""),
-
-  email: "hello@versiert.in",
-
-  location: {
-    city: "Thiruvananthapuram",
-    region: "Kerala",
-    country: "India",
-    short: "Trivandrum, India",
-    /** Approximate city-centre coordinates, used only as a decorative detail. */
-    coords: "8.5241° N, 76.9366° E",
-  },
-
-  tagline: "Independent creative production studio based in Trivandrum, India.",
-  description:
-    "Versiert Media is a creative media production company in Thiruvananthapuram, Kerala — producing video, commercial and ad films, brand films, social media reels, photography, event coverage, podcasts and post-production for brands, businesses and individuals.",
-
-  /**
-   * Social links. Leave `href` empty to hide a link (no broken links are ever
-   * rendered). Paste your full profile URLs to show them in the footer and
-   * contact section.
-   */
-  socials: [
-    { label: "Instagram", href: "" },
-    { label: "YouTube", href: "" },
-    { label: "LinkedIn", href: "" },
-    { label: "Vimeo", href: "" },
-    { label: "Behance", href: "" },
-  ] as { label: string; href: string }[],
-
-  /** Contact form backend (see .env.example). Empty = mailto fallback. */
+  ...d,
+  url: (process.env.NEXT_PUBLIC_SITE_URL || d.url || "https://versiert.in").replace(/\/$/, ""),
   form: {
-    endpoint: process.env.NEXT_PUBLIC_FORM_ENDPOINT || "",
-    web3formsKey: process.env.NEXT_PUBLIC_WEB3FORMS_KEY || "",
+    endpoint: process.env.NEXT_PUBLIC_FORM_ENDPOINT || d.form.endpoint || "",
+    web3formsKey: process.env.NEXT_PUBLIC_WEB3FORMS_KEY || d.form.web3formsKey || "",
   },
-} as const;
+};
 
 export const activeSocials = site.socials.filter((s) => s.href.trim() !== "");
